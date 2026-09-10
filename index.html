@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sistem Manajemen Daftar Tugas</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,'Segoe UI',sans-serif;
+}
+
+:root{
+    --surface-soft:rgba(255,255,255,0.065);
+    --surface-hover:rgba(255,255,255,0.1);
+    --surface-input:rgba(7,12,35,0.62);
+    --border-soft:rgba(255,255,255,0.12);
+    --text-muted:#aeb9d9;
+    --text-subtle:#8793b7;
+    --accent-mint:#83f1ce;
+    --focus-ring:rgba(142,196,255,0.72);
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:32px 20px;
+    overflow-x:hidden;
+    color:#f8fbff;
+
+    background:
+        radial-gradient(circle at 12% 10%, rgba(87, 146, 255, 0.28), transparent 34%),
+        radial-gradient(circle at 92% 88%, rgba(169, 92, 255, 0.24), transparent 36%),
+        linear-gradient(135deg, #111936 0%, #202452 50%, #251d4d 100%);
+
+@media (prefers-reduced-motion:reduce){
+    *,
+    *::before,
+    *::after{
+        animation-duration:0.01ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+        transition-duration:0.01ms !important;
+    }
+}
+    background-size:140% 140%;
+    animation:gradient 18s ease-in-out infinite alternate;
+}
+
+@keyframes gradient{
+    0%{background-position:0% 0%;}
+    100%{background-position:100% 100%;}
+}
+
+.container{
+    width:min(100%, 820px);
+    padding:clamp(24px, 5vw, 42px);
+    background:rgba(19, 25, 55, 0.72);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:24px;
+    box-shadow:0 24px 70px rgba(4, 7, 25, 0.42);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:8px;
+    font-size:clamp(1.45rem, 3vw, 2rem);
+    line-height:1.2;
+    letter-spacing:0;
+}
+
+.container::before{
+    content:'Atur aktivitas Anda dengan lebih terarah';
+    display:block;
+    margin-bottom:28px;
+    color:#aeb9d9;
+    font-size:0.94rem;
+    text-align:center;
+}
+
+.input-group{
+    display:flex;
+    gap:12px;
+    min-width:0;
+}
+
+input{
+    flex:1;
+    min-width:0;
+    padding:14px 16px;
+    color:#f8fbff;
+    background:var(--surface-input);
+    border:1px solid rgba(190, 205, 255, 0.2);
+    border-radius:11px;
+    outline:none;
+    font-size:1rem;
+    transition:border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+input::placeholder{
+    color:#8793b7;
+}
+
+input:focus{
+    background:rgba(7, 12, 35, 0.8);
+    border-color:#8da9ff;
+    box-shadow:0 0 0 4px rgba(112, 145, 255, 0.16);
+}
+
+select{
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+    padding:14px 42px 14px 16px;
+    color:#f8fbff;
+    background-color:rgba(10,17,48,0.72);
+    background-image:
+        linear-gradient(45deg, transparent 50%, #9fb8ff 50%),
+        linear-gradient(135deg, #9fb8ff 50%, transparent 50%),
+        linear-gradient(135deg, rgba(93,119,220,0.14), rgba(138,83,205,0.12));
+    background-position:
+        calc(100% - 18px) 50%,
+        calc(100% - 12px) 50%,
+        0 0;
+    background-size:6px 6px, 6px 6px, 100% 100%;
+    background-repeat:no-repeat;
+    border:1px solid rgba(161, 183, 255, 0.24);
+    border-radius:11px;
+    outline:none;
+    font:inherit;
+    cursor:pointer;
+    color-scheme:dark;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 6px 18px rgba(20,30,85,0.16);
+    transition:border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+select:focus{
+    background-color:rgba(14,23,65,0.88);
+    border-color:#94adff;
+    box-shadow:
+        0 0 0 4px rgba(112,145,255,0.16),
+        0 8px 24px rgba(91,74,190,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+select:hover{
+    background-color:rgba(13,22,62,0.84);
+    border-color:rgba(161,183,255,0.4);
+}
+
+option,
+optgroup{
+    color:#f2f6ff;
+    background-color:#111a42;
+}
+
+option:checked,
+option:hover{
+    color:#ffffff;
+    background-color:#293878;
+}
+
+.priority-group{
+    display:flex;
+    flex:0 0 180px;
+    min-width:0;
+}
+
+.deadline-group{
+    display:flex;
+    flex:0 0 180px;
+    min-width:0;
+    margin-top:10px;
+}
+
+.category-group{
+    display:flex;
+    flex:0 0 180px;
+    min-width:0;
+    margin-top:10px;
+}
+
+input[type="date"]{
+    color-scheme:dark;
+}
+
+.search-group{
+    position:relative;
+    margin-bottom:18px;
+}
+
+.search-group input{
+    width:100%;
+    padding-right:52px;
+}
+
+.filter-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 10px;
+    margin-bottom:18px;
+    background:rgba(255,255,255,0.035);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px;
+}
+
+.filter-row label{
+    flex-shrink:0;
+    color:var(--text-muted);
+    font-size:0.86rem;
+    font-weight:700;
+}
+
+.filter-row select{
+    flex:1;
+    min-width:0;
+    padding:11px 14px;
+    font-size:0.9rem;
+}
+
+.filter-count{
+    flex-shrink:0;
+    color:var(--text-subtle);
+    font-size:0.8rem;
+}
+
+.sort-row{
+    margin-top:-8px;
+}
+
+.clear-search{
+    position:absolute;
+    top:50%;
+    right:8px;
+    width:34px;
+    height:34px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    color:#c8d3f3;
+    background:rgba(126, 151, 255, 0.16);
+    border-radius:9px;
+    font-size:1.3rem;
+    line-height:1;
+    transform:translateY(-50%);
+}
+
+.clear-search:hover{
+    background:rgba(126, 151, 255, 0.3);
+    transform:translateY(-50%);
+}
+
+button{
+    border:0;
+    min-height:38px;
+    border-radius:10px;
+    cursor:pointer;
+    font:inherit;
+    font-weight:700;
+    transition:transform 180ms ease, filter 180ms ease, background 180ms ease;
+}
+
+button:hover{
+    filter:brightness(1.1);
+    transform:translateY(-1px);
+}
+
+button:active{
+    transform:translateY(0);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible{
+    outline:3px solid var(--focus-ring);
+    outline-offset:2px;
+}
+
+.tambah{
+    min-height:46px;
+    padding:0 22px;
+    color:#07152c;
+    background:linear-gradient(135deg, #83f1ce, #55d8c4);
+    box-shadow:0 8px 20px rgba(48, 214, 182, 0.2);
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    margin:24px 0;
+}
+
+.stats-secondary{
+    grid-template-columns:repeat(2, 1fr);
+    margin-top:-12px;
+}
+
+.card{
+    padding:16px 12px;
+    color:#c5cde5;
+    background:var(--surface-soft);
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+    text-align:center;
+    transition:transform 180ms ease, background 180ms ease;
+}
+
+.card:hover{
+    background:var(--surface-hover);
+    transform:translateY(-2px);
+}
+
+.card h3{
+    margin-bottom:4px;
+    color:#ffffff;
+    font-size:1.55rem;
+    line-height:1;
+}
+
+.card p{
+    font-size:0.82rem;
+}
+
+.progress-panel{
+    padding:20px;
+    margin:0 0 24px;
+    background:var(--surface-soft);
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+}
+
+.progress-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.progress-heading h2{
+    color:#f8fbff;
+    font-size:1rem;
+}
+
+.progress-value{
+    color:#9ff0d3;
+    font-size:1.45rem;
+    line-height:1;
+}
+
+.progress-track{
+    width:100%;
+    height:10px;
+    overflow:hidden;
+    background:rgba(7, 12, 35, 0.62);
+    border-radius:999px;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg, #55d8c4, #83f1ce);
+    border-radius:inherit;
+    transition:width 260ms ease;
+}
+
+.progress-summary{
+    margin-top:10px;
+    color:var(--text-muted);
+    font-size:0.86rem;
+}
+
+ul{
+    list-style:none;
+}
+
+li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    padding:16px 18px;
+    margin-bottom:10px;
+    color:#f5f7ff;
+    background:rgba(255,255,255,0.07);
+    border:1px solid var(--border-soft);
+    border-radius:14px;
+    min-width:0;
+    transition:background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+li:hover{
+    background:rgba(255,255,255,0.105);
+    border-color:rgba(173, 194, 255, 0.28);
+    transform:translateX(2px);
+}
+
+.task-content > span:first-child{
+    color:#f8fbff;
+    font-size:1.02rem;
+    font-weight:700;
+    line-height:1.4;
+}
+
+.task-content > span[style*="line-through"]{
+    color:#aab4d0;
+    opacity:0.72;
+}
+
+li > span{
+    min-width:0;
+    overflow-wrap:anywhere;
+    font-size:1rem;
+    font-weight:600;
+    line-height:1.45;
+}
+
+.task-content{
+    display:flex;
+    min-width:0;
+    flex:1;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+}
+
+.priority-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 9px;
+    border:1px solid transparent;
+    border-radius:999px;
+    font-size:0.7rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    transition:background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.priority-high{
+    color:#ffc8d0;
+    background:rgba(255, 91, 118, 0.16);
+    border-color:rgba(255, 126, 147, 0.24);
+}
+
+.priority-medium{
+    color:#ffe8a8;
+    background:rgba(246, 190, 65, 0.15);
+    border-color:rgba(255, 211, 104, 0.23);
+}
+
+.priority-low{
+    color:#b9f5d9;
+    background:rgba(56, 211, 141, 0.14);
+    border-color:rgba(107, 235, 174, 0.22);
+}
+
+.category-badge{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 9px;
+    color:#c8d9ff;
+    background:rgba(105, 145, 235, 0.15);
+    border:1px solid rgba(135, 174, 255, 0.24);
+    border-radius:999px;
+    font-size:0.7rem;
+    font-weight:700;
+    transition:background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.priority-badge:hover,
+.category-badge:hover{
+    transform:translateY(-1px);
+}
+
+.deadline-info{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:6px 8px;
+    color:#cbd5f0;
+    font-size:0.82rem;
+    line-height:1.4;
+}
+
+.deadline-status{
+    padding:3px 7px;
+    border:1px solid currentColor;
+    border-radius:999px;
+    font-weight:700;
+    font-size:0.74rem;
+}
+
+.deadline-safe{
+    color:#a8efd0;
+}
+
+.deadline-soon{
+    color:#ffe39a;
+}
+
+.deadline-today{
+    color:#ffc58b;
+}
+
+.deadline-overdue{
+    color:#ffb3bd;
+}
+
+.deadline-complete{
+    color:#a9d9ff;
+}
+
+.modal-backdrop{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(4, 7, 25, 0.7);
+    backdrop-filter:blur(6px);
+}
+
+.modal-backdrop.is-visible{
+    display:flex;
+    animation:fadeIn 160ms ease-out;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+.edit-modal{
+    width:min(100%, 480px);
+    max-height:calc(100vh - 32px);
+    overflow-y:auto;
+    padding:26px;
+    background:rgba(23,29,66,0.96);
+    border:1px solid rgba(173,194,255,0.22);
+    border-radius:16px;
+    box-shadow:0 24px 70px rgba(4, 7, 25, 0.55);
+}
+
+.edit-modal h2{
+    margin-bottom:20px;
+    color:#ffffff;
+    font-size:1.25rem;
+    line-height:1.25;
+}
+
+.edit-field{
+    display:grid;
+    gap:7px;
+    margin-bottom:14px;
+}
+
+.edit-field label{
+    color:#cbd5f0;
+    font-size:0.82rem;
+    font-weight:700;
+}
+
+.edit-field input,
+.edit-field select{
+    width:100%;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:22px;
+}
+
+.modal-actions button{
+    min-height:42px;
+    padding:0 16px;
+}
+
+.cancel-edit{
+    color:#dbe4ff;
+    background:rgba(126, 151, 255, 0.16);
+}
+
+.save-edit{
+    color:#07152c;
+    background:#83f1ce;
+}
+
+.edit-feedback{
+    min-height:20px;
+    color:#ffb3bd;
+    font-size:0.82rem;
+}
+
+.toast{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    z-index:30;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    max-width:calc(100vw - 44px);
+    padding:13px 14px 13px 16px;
+    color:#f8fbff;
+    background:rgba(23,29,66,0.96);
+    border:1px solid rgba(131,241,206,0.28);
+    border-radius:11px;
+    box-shadow:0 16px 40px rgba(4, 7, 25, 0.45);
+    transform:translateY(18px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.is-visible{
+    transform:translateY(0);
+    opacity:1;
+    pointer-events:auto;
+}
+
+.toast button{
+    min-height:34px;
+    padding:0 11px;
+    color:#07152c;
+    background:#83f1ce;
+}
+
+.toast button:hover,
+.save-edit:hover,
+.tambah:hover{
+    background:#9af7da;
+}
+
+li > div{
+    display:flex;
+    flex-shrink:0;
+    gap:8px;
+}
+
+li > div button{
+    width:38px;
+    height:38px;
+    color:#dbe4ff;
+    background:rgba(126, 151, 255, 0.16);
+}
+
+li > div button:focus-visible,
+.tambah:focus-visible,
+.clear-search:focus-visible,
+select:focus-visible,
+.modal-actions button:focus-visible,
+.toast button:focus-visible{
+    outline:3px solid rgba(142, 196, 255, 0.7);
+    outline-offset:2px;
+}
+
+.hapus{
+    color:#ffdce2;
+    background:rgba(255, 91, 118, 0.18);
+}
+
+.kosong{
+    padding:24px 16px 16px;
+    text-align:center;
+    color:#d7def4;
+    font-size:1rem;
+    line-height:1.6;
+}
+
+.kosong .empty-icon{
+    display:block;
+    margin-bottom:8px;
+    font-size:1.8rem;
+    line-height:1;
+}
+
+.kosong strong{
+    display:block;
+    color:#ffffff;
+    font-size:1.05rem;
+}
+
+.kosong span:last-child{
+    display:block;
+    margin-top:4px;
+    color:var(--text-muted);
+}
+
+.kosong.search-empty{
+    display:none;
+}
+
+@media (max-width:560px){
+    body{
+        align-items:flex-start;
+        padding:16px 12px;
+    }
+
+    .container{
+        padding:20px 14px;
+        border-radius:20px;
+    }
+
+    h1{
+        font-size:1.4rem;
+    }
+
+    .container::before{
+        margin-bottom:20px;
+        font-size:0.86rem;
+    }
+
+    .input-group{
+        flex-direction:column;
+    }
+
+    .priority-group{
+        flex-basis:auto;
+    }
+
+    .deadline-group{
+        flex-basis:auto;
+    }
+
+    .category-group{
+        flex-basis:auto;
+    }
+
+    .tambah{
+        min-height:46px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
+        margin:18px 0;
+    }
+
+    .stats-secondary{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        margin-top:-12px;
+    }
+
+    .stats:not(.stats-secondary) .card:last-child{
+        grid-column:1 / -1;
+    }
+
+    .card{
+        padding:13px 6px;
+    }
+
+    .card h3{
+        font-size:1.3rem;
+    }
+
+    .card p{
+        font-size:0.72rem;
+    }
+
+    .progress-panel{
+        padding:16px;
+    }
+
+    .progress-heading h2{
+        font-size:0.95rem;
+    }
+
+    .progress-value{
+        font-size:1.3rem;
+    }
+
+    .filter-row{
+        align-items:stretch;
+        flex-wrap:wrap;
+        gap:8px;
+    }
+
+    .filter-row select{
+        flex-basis:100%;
+    }
+
+    .filter-count{
+        flex-basis:100%;
+    }
+
+    .sort-row{
+        margin-top:-4px;
+    }
+
+    li{
+        align-items:flex-start;
+        flex-wrap:wrap;
+        padding:14px;
+    }
+
+    li > div:last-child{
+        width:100%;
+        justify-content:flex-end;
+        gap:6px;
+    }
+
+    li > div button{
+        width:42px;
+        height:42px;
+    }
+
+    .edit-modal{
+        width:100%;
+        padding:20px 16px;
+    }
+
+    .modal-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+    }
+
+    .modal-actions button{
+        width:100%;
+    }
+
+    .toast{
+        right:12px;
+        bottom:12px;
+        left:12px;
+        max-width:none;
+        justify-content:space-between;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📋 Sistem Manajemen Daftar Tugas</h1>
+
+    <div class="input-group">
+        <input
+            type="text"
+            id="tugasInput"
+            placeholder="Masukkan tugas..."
+        >
+
+        <button
+            class="tambah"
+            onclick="tambahTugas()">
+            Tambah
+        </button>
+    </div>
+
+    <div class="priority-group">
+        <select id="prioritasInput" aria-label="Priority tugas">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+        </select>
+    </div>
+
+    <div class="deadline-group">
+        <input
+            type="date"
+            id="deadlineInput"
+            aria-label="Deadline tugas"
+            title="Deadline tugas">
+    </div>
+
+    <div class="category-group">
+        <select id="kategoriInput" aria-label="Kategori tugas">
+            <option value="Kuliah">Kuliah</option>
+            <option value="Coding">Coding</option>
+            <option value="Project">Project</option>
+            <option value="Pribadi">Pribadi</option>
+            <option value="Lainnya" selected>Lainnya</option>
+        </select>
+    </div>
+
+    <div class="stats">
+
+        <div class="card">
+            <h3 id="total">0</h3>
+            <p>Total Tugas</p>
+        </div>
+
+        <div class="card">
+            <h3 id="selesai">0</h3>
+            <p>Tugas Selesai</p>
+        </div>
+
+        <div class="card">
+            <h3 id="belum">0</h3>
+            <p>Belum Selesai</p>
+        </div>
+
+    </div>
+
+    <div class="stats stats-secondary">
+
+        <div class="card">
+            <h3 id="prioritasTinggi">0</h3>
+            <p>🔴 High Priority</p>
+        </div>
+
+        <div class="card">
+            <h3 id="terlambat">0</h3>
+            <p>⚠️ Overdue</p>
+        </div>
+
+    </div>
+
+    <section class="progress-panel" aria-labelledby="judulProgress">
+        <div class="progress-heading">
+            <h2 id="judulProgress">Progress Tugas</h2>
+            <strong class="progress-value" id="progressPersen">0%</strong>
+        </div>
+
+        <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Progress tugas"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <p class="progress-summary" id="progressRingkasan">
+            0 dari 0 tugas selesai
+        </p>
+    </section>
+
+    <div class="search-group">
+        <input
+            type="search"
+            id="pencarianTugas"
+            placeholder="🔍 Cari tugas..."
+            aria-label="Cari tugas"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            class="clear-search"
+            id="hapusPencarian"
+            aria-label="Hapus pencarian"
+            onclick="hapusPencarian()">
+            ×
+        </button>
+    </div>
+
+    <div class="filter-row">
+        <label for="filterTugas">Tampilkan</label>
+        <select id="filterTugas" aria-label="Filter tugas">
+            <option value="all">Semua</option>
+            <optgroup label="Status">
+                <option value="status-pending">Belum Selesai</option>
+                <option value="status-completed">Selesai</option>
+            </optgroup>
+            <optgroup label="Priority">
+                <option value="priority-high">🔴 High Priority</option>
+                <option value="priority-medium">🟡 Medium Priority</option>
+                <option value="priority-low">🟢 Low Priority</option>
+            </optgroup>
+            <optgroup label="Deadline">
+                <option value="deadline-all">📅 Semua Deadline</option>
+                <option value="deadline-today">🟠 Hari Ini</option>
+                <option value="deadline-soon">🟡 Segera</option>
+                <option value="deadline-overdue">🔴 Terlambat</option>
+                <option value="deadline-none">⚪ Tanpa Deadline</option>
+            </optgroup>
+        </select>
+        <span class="filter-count" id="jumlahHasil">Menampilkan 0 tugas</span>
+    </div>
+
+    <div class="filter-row category-filter-row">
+        <label for="filterKategori">Kategori</label>
+        <select id="filterKategori" aria-label="Filter kategori">
+            <option value="all">Semua</option>
+            <option value="Kuliah">Kuliah</option>
+            <option value="Coding">Coding</option>
+            <option value="Project">Project</option>
+            <option value="Pribadi">Pribadi</option>
+            <option value="Lainnya">Lainnya</option>
+        </select>
+    </div>
+
+    <div class="filter-row sort-row">
+        <label for="sortingTugas">Urutkan berdasarkan</label>
+        <select id="sortingTugas" aria-label="Urutkan tugas">
+            <option value="newest" selected>Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
+            <option value="priority">Priority</option>
+            <option value="deadline-nearest">Deadline Terdekat</option>
+            <option value="deadline-farthest">Deadline Terjauh</option>
+        </select>
+    </div>
+
+    <ul id="daftarTugas"></ul>
+
+    <p class="kosong" id="pesanKosong">
+        <span class="empty-icon">📋</span>
+        <strong>Belum ada tugas.</strong>
+        Tambahkan tugas pertama Anda untuk mulai mengatur aktivitas.
+    </p>
+
+    <p class="kosong search-empty" id="pesanTidakDitemukan">
+        <span class="empty-icon">🔍</span>
+        <strong id="judulTidakDitemukan">Tugas tidak ditemukan</strong>
+        <span id="detailTidakDitemukan">Periksa kembali kata kunci pencarian Anda.</span>
+    </p>
+
+</div>
+
+<div class="modal-backdrop" id="editModal" role="presentation">
+    <section
+        class="edit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="judulEditModal">
+        <h2 id="judulEditModal">Edit Tugas</h2>
+
+        <div class="edit-field">
+            <label for="editNama">Judul tugas</label>
+            <input type="text" id="editNama" aria-describedby="editFeedback">
+        </div>
+
+        <div class="edit-field">
+            <label for="editPrioritas">Priority</label>
+            <select id="editPrioritas">
+                <option value="high">🔴 High</option>
+                <option value="medium">🟡 Medium</option>
+                <option value="low">🟢 Low</option>
+            </select>
+        </div>
+
+        <div class="edit-field">
+            <label for="editDeadline">Deadline</label>
+            <input type="date" id="editDeadline">
+        </div>
+
+        <div class="edit-field">
+            <label for="editKategori">Kategori</label>
+            <select id="editKategori">
+                <option value="Kuliah">Kuliah</option>
+                <option value="Coding">Coding</option>
+                <option value="Project">Project</option>
+                <option value="Pribadi">Pribadi</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+        </div>
+
+        <p class="edit-feedback" id="editFeedback" role="alert"></p>
+
+        <div class="modal-actions">
+            <button type="button" class="cancel-edit" onclick="batalEdit()">
+                Batal
+            </button>
+            <button type="button" class="save-edit" onclick="simpanEdit()">
+                Simpan Perubahan
+            </button>
+        </div>
+    </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+    <span id="toastMessage"></span>
+    <button type="button" id="undoDelete" onclick="undoHapus()">Undo</button>
+</div>
+
+<script>
+
+let daftarTugas =
+JSON.parse(localStorage.getItem("tugas")) || [];
+
+let kataKunciPencarian = "";
+let filterAktif = "all";
+let kategoriFilterAktif = "all";
+let sortingAktif = "newest";
+let indeksEditAktif = null;
+let dataUndoHapus = null;
+let timerToast = null;
+
+const PRIORITAS_VALID = ["high", "medium", "low"];
+const KATEGORI_VALID = ["Kuliah", "Coding", "Project", "Pribadi", "Lainnya"];
+
+function normalisasiPrioritas(priority){
+    return PRIORITAS_VALID.includes(priority)
+    ? priority
+    : "medium";
+}
+
+function labelPrioritas(priority){
+    const labels = {
+        high: "🔴 HIGH",
+        medium: "🟡 MEDIUM",
+        low: "🟢 LOW"
+    };
+
+    return labels[normalisasiPrioritas(priority)];
+}
+
+function normalisasiKategori(category){
+    return KATEGORI_VALID.includes(category)
+    ? category
+    : "Lainnya";
+}
+
+function labelFilterKategori(){
+    return kategoriFilterAktif === "all"
+    ? ""
+    : kategoriFilterAktif;
+}
+
+function normalisasiDeadline(deadline){
+    if(!deadline || !/^\d{4}-\d{2}-\d{2}$/.test(deadline)){
+        return null;
+    }
+
+    const [year, month, day] = deadline.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+        ? deadline
+        : null;
+}
+
+function nomorHari(date){
+    return Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    ) / 86400000;
+}
+
+function statusDeadline(deadline, selesai){
+    if(selesai){
+        return {
+            icon: "✓",
+            label: "Selesai",
+            className: "deadline-complete"
+        };
+    }
+
+    const [year, month, day] = deadline.split("-").map(Number);
+    const deadlineDate = new Date(year, month - 1, day);
+    const sekarang = new Date();
+    const selisihHari = nomorHari(deadlineDate) - nomorHari(sekarang);
+
+    if(selisihHari < 0){
+        return { icon: "🔴", label: "Terlambat", className: "deadline-overdue" };
+    }
+
+    if(selisihHari === 0){
+        return { icon: "🟠", label: "Hari ini", className: "deadline-today" };
+    }
+
+    if(selisihHari <= 3){
+        return { icon: "🟡", label: "Segera", className: "deadline-soon" };
+    }
+
+    return { icon: "🟢", label: "Aman", className: "deadline-safe" };
+}
+
+function cocokDenganFilter(tugas, priority, deadline, category){
+    switch(filterAktif){
+        case "status-pending":
+            return !tugas.status;
+        case "status-completed":
+            return tugas.status;
+        case "priority-high":
+            return priority === "high";
+        case "priority-medium":
+            return priority === "medium";
+        case "priority-low":
+            return priority === "low";
+        case "deadline-all":
+            return Boolean(deadline);
+        case "deadline-today":
+            return Boolean(deadline) &&
+                statusDeadline(deadline, false).className === "deadline-today";
+        case "deadline-soon":
+            return Boolean(deadline) &&
+                statusDeadline(deadline, false).className === "deadline-soon";
+        case "deadline-overdue":
+            return Boolean(deadline) && !tugas.status &&
+                statusDeadline(deadline, false).className === "deadline-overdue";
+        case "deadline-none":
+            return !deadline;
+        default:
+            return true;
+    }
+}
+
+function cocokDenganKategori(category){
+    return kategoriFilterAktif === "all" ||
+        category === kategoriFilterAktif;
+}
+
+function nilaiDibuat(tugas, index){
+    const createdAt = Number(tugas.createdAt);
+
+    return Number.isFinite(createdAt) && createdAt > 0
+    ? createdAt
+    : index;
+}
+
+function bandingkanTampilan(a, b){
+    switch(sortingAktif){
+        case "oldest":
+            return a.createdAt - b.createdAt || a.index - b.index;
+        case "az":
+            return a.tugas.nama.localeCompare(b.tugas.nama, "id-ID", {
+                sensitivity: "base"
+            }) || a.index - b.index;
+        case "za":
+            return b.tugas.nama.localeCompare(a.tugas.nama, "id-ID", {
+                sensitivity: "base"
+            }) || a.index - b.index;
+        case "priority":
+            return a.priorityOrder - b.priorityOrder || a.index - b.index;
+        case "deadline-nearest":
+            if(!a.deadline && !b.deadline){
+                return a.index - b.index;
+            }
+            if(!a.deadline){
+                return 1;
+            }
+            if(!b.deadline){
+                return -1;
+            }
+            return a.deadline.localeCompare(b.deadline) || a.index - b.index;
+        case "deadline-farthest":
+            if(!a.deadline && !b.deadline){
+                return a.index - b.index;
+            }
+            if(!a.deadline){
+                return 1;
+            }
+            if(!b.deadline){
+                return -1;
+            }
+            return b.deadline.localeCompare(a.deadline) || a.index - b.index;
+        case "newest":
+        default:
+            return b.createdAt - a.createdAt || b.index - a.index;
+    }
+}
+
+function formatTanggal(deadline){
+    const [year, month, day] = deadline.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    return new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    }).format(date);
+}
+
+let dataPerluDimigrasikan = false;
+
+daftarTugas.forEach(function(tugas){
+    const priorityValid = normalisasiPrioritas(tugas.priority);
+    const deadlineValid = normalisasiDeadline(tugas.deadline);
+    const categoryValid = normalisasiKategori(tugas.category);
+
+    if(tugas.priority !== priorityValid){
+        tugas.priority = priorityValid;
+        dataPerluDimigrasikan = true;
+    }
+
+    if(tugas.deadline !== deadlineValid){
+        tugas.deadline = deadlineValid;
+        dataPerluDimigrasikan = true;
+    }
+
+    if(tugas.category !== categoryValid){
+        tugas.category = categoryValid;
+        dataPerluDimigrasikan = true;
+    }
+});
+
+if(dataPerluDimigrasikan){
+    simpanData();
+}
+
+function simpanData(){
+    localStorage.setItem(
+        "tugas",
+        JSON.stringify(daftarTugas)
+    );
+}
+
+function tambahTugas(){
+
+    let input =
+    document.getElementById("tugasInput");
+
+    let tugas = input.value.trim();
+
+    if(tugas === ""){
+        alert("Masukkan tugas terlebih dahulu!");
+        return;
+    }
+
+    daftarTugas.push({
+        nama:tugas,
+        status:false,
+        createdAt:Date.now(),
+        priority:normalisasiPrioritas(
+            document.getElementById("prioritasInput").value
+        ),
+        deadline:normalisasiDeadline(
+            document.getElementById("deadlineInput").value
+        ),
+        category:normalisasiKategori(
+            document.getElementById("kategoriInput").value
+        )
+    });
+
+    input.value="";
+    document.getElementById("prioritasInput").value = "medium";
+    document.getElementById("deadlineInput").value = "";
+    document.getElementById("kategoriInput").value = "Lainnya";
+
+    simpanData();
+    tampilkanTugas();
+}
+
+function hapusTugas(index){
+
+    if(!daftarTugas[index]){
+        return;
+    }
+
+    dataUndoHapus = {
+        task: daftarTugas[index],
+        index
+    };
+
+    daftarTugas.splice(index,1);
+
+    simpanData();
+    tampilkanTugas();
+    tampilkanToast("Task berhasil dihapus.", true);
+}
+
+function selesaiTugas(index){
+
+    daftarTugas[index].status =
+    !daftarTugas[index].status;
+
+    simpanData();
+    tampilkanTugas();
+}
+
+function mulaiEdit(index){
+    const tugas = daftarTugas[index];
+
+    if(!tugas){
+        return;
+    }
+
+    indeksEditAktif = index;
+    document.getElementById("editNama").value = tugas.nama;
+    document.getElementById("editPrioritas").value = normalisasiPrioritas(tugas.priority);
+    document.getElementById("editDeadline").value = normalisasiDeadline(tugas.deadline) || "";
+    document.getElementById("editKategori").value = normalisasiKategori(tugas.category);
+    document.getElementById("editFeedback").innerText = "";
+    document.getElementById("editModal").classList.add("is-visible");
+    document.body.style.overflow = "hidden";
+    document.getElementById("editNama").focus();
+}
+
+function batalEdit(){
+    indeksEditAktif = null;
+    document.getElementById("editModal").classList.remove("is-visible");
+    document.body.style.overflow = "";
+}
+
+function simpanEdit(){
+    if(indeksEditAktif === null || !daftarTugas[indeksEditAktif]){
+        return;
+    }
+
+    const namaBaru = document.getElementById("editNama").value.trim();
+
+    if(namaBaru === ""){
+        document.getElementById("editFeedback").innerText =
+            "Judul tugas tidak boleh kosong.";
+        document.getElementById("editNama").focus();
+        return;
+    }
+
+    const tugas = daftarTugas[indeksEditAktif];
+    tugas.nama = namaBaru;
+    tugas.priority = normalisasiPrioritas(
+        document.getElementById("editPrioritas").value
+    );
+    tugas.deadline = normalisasiDeadline(
+        document.getElementById("editDeadline").value
+    );
+    tugas.category = normalisasiKategori(
+        document.getElementById("editKategori").value
+    );
+
+    simpanData();
+    batalEdit();
+    tampilkanTugas();
+}
+
+function tampilkanToast(message, tampilkanUndo){
+    const toast = document.getElementById("toast");
+    const undoButton = document.getElementById("undoDelete");
+
+    clearTimeout(timerToast);
+    document.getElementById("toastMessage").innerText = message;
+    undoButton.style.display = tampilkanUndo ? "block" : "none";
+    toast.classList.add("is-visible");
+
+    timerToast = setTimeout(function(){
+        toast.classList.remove("is-visible");
+        if(tampilkanUndo){
+            dataUndoHapus = null;
+        }
+    }, tampilkanUndo ? 5000 : 2500);
+}
+
+function undoHapus(){
+    if(!dataUndoHapus || daftarTugas.includes(dataUndoHapus.task)){
+        return;
+    }
+
+    const posisi = Math.min(dataUndoHapus.index, daftarTugas.length);
+    daftarTugas.splice(posisi, 0, dataUndoHapus.task);
+    dataUndoHapus = null;
+    simpanData();
+    tampilkanTugas();
+    tampilkanToast("Task dikembalikan.", false);
+}
+
+function hapusPencarian(){
+
+    let input =
+    document.getElementById("pencarianTugas");
+
+    input.value = "";
+    kataKunciPencarian = "";
+    tampilkanTugas();
+    input.focus();
+}
+
+function tampilkanTugas(){
+
+    let ul =
+    document.getElementById("daftarTugas");
+
+    ul.innerHTML="";
+
+    let selesai = 0;
+    let jumlahCocok = 0;
+    let prioritasTinggi = 0;
+    let terlambat = 0;
+
+    daftarTugas.forEach((tugas,index)=>{
+        const priority = normalisasiPrioritas(tugas.priority);
+        const deadline = normalisasiDeadline(tugas.deadline);
+        const category = normalisasiKategori(tugas.category);
+        tugas.priority = priority;
+        tugas.deadline = deadline;
+        tugas.category = category;
+
+        if(tugas.status){
+            selesai++;
+        }
+
+        if(priority === "high"){
+            prioritasTinggi++;
+        }
+
+        if(deadline && !tugas.status &&
+            statusDeadline(deadline, false).className === "deadline-overdue"){
+            terlambat++;
+        }
+    });
+
+    const priorityOrder = {
+        high: 0,
+        medium: 1,
+        low: 2
+    };
+
+    const urutanTampilan = daftarTugas
+    .map((tugas,index)=>{
+        const priority = normalisasiPrioritas(tugas.priority);
+        const deadline = normalisasiDeadline(tugas.deadline);
+        const category = normalisasiKategori(tugas.category);
+
+        return {
+            tugas,
+            index,
+            priority,
+            deadline,
+            category,
+            createdAt: nilaiDibuat(tugas, index),
+            priorityOrder: priorityOrder[priority]
+        };
+    })
+    .filter(({tugas, priority, deadline, category}) =>
+        tugas.nama.toLowerCase().includes(kataKunciPencarian) &&
+        cocokDenganFilter(tugas, priority, deadline, category) &&
+        cocokDenganKategori(category)
+    )
+    .sort(bandingkanTampilan);
+
+    jumlahCocok = urutanTampilan.length;
+
+    urutanTampilan.forEach(({tugas, index, priority, deadline, category})=>{
+
+        let li =
+        document.createElement("li");
+
+        li.dataset.taskIndex = index;
+
+        const deadlineMarkup = deadline
+        ? (() => {
+            const status = statusDeadline(deadline, tugas.status);
+            return `
+                <span class="deadline-info">
+                    📅 ${formatTanggal(deadline)}
+                    <span class="deadline-status ${status.className}">
+                        ${status.icon} ${status.label}
+                    </span>
+                </span>
+            `;
+        })()
+        : "";
+
+        li.innerHTML = `
+            <div class="task-content">
+                <span
+                    style="
+                    text-decoration:
+                    ${tugas.status ? 'line-through':'none'};
+                    ">
+                    ${tugas.nama}
+                </span>
+                <span class="priority-badge priority-${priority}">
+                    ${labelPrioritas(priority)}
+                </span>
+                <span class="category-badge">
+                    ${category}
+                </span>
+                ${deadlineMarkup}
+            </div>
+
+            <div>
+
+                <button
+                onclick="mulaiEdit(${index})"
+                aria-label="Edit tugas">
+                ✏️
+                </button>
+
+                <button
+                onclick="selesaiTugas(${index})"
+                aria-label="${tugas.status ? 'Batalkan selesai tugas' : 'Tandai tugas selesai'}">
+                ${tugas.status ? '↩️':'✅'}
+                </button>
+
+                <button
+                class="hapus"
+                onclick="hapusTugas(${index})"
+                aria-label="Hapus tugas">
+                🗑️
+                </button>
+
+            </div>
+        `;
+
+        ul.appendChild(li);
+
+    });
+
+    document.getElementById("total")
+    .innerText = daftarTugas.length;
+
+    document.getElementById("selesai")
+    .innerText = selesai;
+
+    document.getElementById("belum")
+    .innerText =
+    daftarTugas.length - selesai;
+
+    const totalTugas = daftarTugas.length;
+    const progress = totalTugas === 0
+    ? 0
+    : Math.min(100, Math.max(0, Math.round(
+        (selesai / totalTugas) * 100
+    )));
+
+    document.getElementById("prioritasTinggi")
+    .innerText = prioritasTinggi;
+
+    document.getElementById("terlambat")
+    .innerText = terlambat;
+
+    document.getElementById("progressPersen")
+    .innerText = `${progress}%`;
+
+    document.getElementById("progressBar")
+    .style.width = `${progress}%`;
+
+    document.querySelector(".progress-track")
+    .setAttribute("aria-valuenow", progress);
+
+    document.getElementById("progressRingkasan")
+    .innerText = selesai === totalTugas && totalTugas > 0
+    ? "Semua tugas selesai! 🎉"
+    : `${selesai} dari ${totalTugas} tugas selesai`;
+
+    document.getElementById("jumlahHasil")
+    .innerText = `Menampilkan ${jumlahCocok} tugas`;
+
+    document.getElementById("pesanKosong")
+    .style.display =
+    daftarTugas.length === 0
+    ? "block"
+    : "none";
+
+    document.getElementById("pesanTidakDitemukan")
+    .style.display =
+    daftarTugas.length > 0 && jumlahCocok === 0
+    ? "block"
+    : "none";
+
+    const memakaiSearch = Boolean(kataKunciPencarian);
+    const memakaiFilter = filterAktif !== "all" || kategoriFilterAktif !== "all";
+    const judulEmpty = document.getElementById("judulTidakDitemukan");
+    const detailEmpty = document.getElementById("detailTidakDitemukan");
+
+    const memakaiKategori = kategoriFilterAktif !== "all";
+
+    if(memakaiSearch && memakaiKategori){
+        judulEmpty.innerText = "Tidak ada tugas yang cocok";
+        detailEmpty.innerText = `Tidak ada tugas yang cocok dengan pencarian dan kategori ${labelFilterKategori()}.`;
+    }else if(memakaiKategori){
+        judulEmpty.innerText = `Belum ada tugas dalam kategori ${labelFilterKategori()}.`;
+        detailEmpty.innerText = "Pilih kategori lain atau tambahkan tugas baru.";
+    }else if(memakaiSearch && memakaiFilter){
+        judulEmpty.innerText = "Tidak ada tugas yang cocok";
+        detailEmpty.innerText = "Tidak ada tugas yang cocok dengan pencarian dan filter.";
+    }else if(memakaiFilter){
+        judulEmpty.innerText = "Tidak ada tugas yang cocok";
+        detailEmpty.innerText = "Belum ada tugas yang sesuai dengan filter ini.";
+    }else{
+        judulEmpty.innerText = "Tugas tidak ditemukan";
+        detailEmpty.innerText = "Periksa kembali kata kunci pencarian Anda.";
+    }
+
+    document.getElementById("hapusPencarian")
+    .style.display = kataKunciPencarian
+    ? "flex"
+    : "none";
+}
+
+document.getElementById("pencarianTugas")
+.addEventListener("input", function(event){
+    kataKunciPencarian = event.target.value.trim().toLowerCase();
+    tampilkanTugas();
+});
+
+document.getElementById("filterTugas")
+.addEventListener("change", function(event){
+    filterAktif = event.target.value;
+    tampilkanTugas();
+});
+
+document.getElementById("filterKategori")
+.addEventListener("change", function(event){
+    kategoriFilterAktif = event.target.value;
+    tampilkanTugas();
+});
+
+document.getElementById("sortingTugas")
+.addEventListener("change", function(event){
+    sortingAktif = event.target.value;
+    tampilkanTugas();
+});
+
+document.addEventListener("keydown", function(event){
+    if(event.key === "Escape" && indeksEditAktif !== null){
+        batalEdit();
+    }
+});
+
+tampilkanTugas();
+
+</script>
+
+</body>
+</html>

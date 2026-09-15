@@ -3,16 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="./logo to do list.png">
 
 <title>Sistem Manajemen Daftar Tugas</title>
 
 <style>
 
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Inter,'Segoe UI',sans-serif;
+    font-family:'Manrope','Segoe UI',sans-serif;
 }
 
 :root{
@@ -39,6 +42,9 @@ body{
         radial-gradient(circle at 12% 10%, rgba(87, 146, 255, 0.28), transparent 34%),
         radial-gradient(circle at 92% 88%, rgba(169, 92, 255, 0.24), transparent 36%),
         linear-gradient(135deg, #111936 0%, #202452 50%, #251d4d 100%);
+    background-size:140% 140%;
+    animation:gradient 18s ease-in-out infinite alternate;
+}
 
 @media (prefers-reduced-motion:reduce){
     *,
@@ -49,9 +55,6 @@ body{
         scroll-behavior:auto !important;
         transition-duration:0.01ms !important;
     }
-}
-    background-size:140% 140%;
-    animation:gradient 18s ease-in-out infinite alternate;
 }
 
 @keyframes gradient{
